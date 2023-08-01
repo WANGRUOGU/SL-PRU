@@ -1,21 +1,20 @@
 %% Loading E.coli reference images and an unknown mixture image
 clear variables
-load('EcoliImages.mat')
+load EcoliEndMat.mat
+%% Parameters
+lam_seq = @(lam_ub, lam_lb, lam_range) ...
+    [0,exp(log(lam_lb):((log(lam_ub)-log(lam_lb))/lam_range):log(lam_ub))];
+lam = lam_seq(10, .1, 8);
+sz_sam = 1e0;
 %% Endmembers extraction
 E_Ecoli = PNMF(ref_Ecoli);
 %% Tuning parameters
-lam1 = [0, 10.^(-2:1)];
-lam2 = [0, 10.^(-2:1)];
-sz_sam = 1e2;
-[l1_opt, l2_opt] = Tuning(ref_Ecoli, E_Ecoli, Fluorophores, lam1, lam2, sz_sam);
+[l1_PR, l2_PR, l1_NLS, l2_NLS, l_SNLS, prop]...
+    = Tuning(ref_Ecoli, E_Ecoli, Fluorophores, lam, lam, sz_sam);
 %% Unmixing a real mixed biological image
-A = SLPRU_Full(mixture, E_Ecoli, l1_opt, l2_opt);
+A_NLS = UnmixSpIm(mixture, E_Ecoli, 'NLS', 0, 0);
+A_SNLS = UnmixSpIm(mixture, E_Ecoli, 'SNLS', 0, l_SNLS);
+A_SLNLS = UnmixSpIm(mixture, E_Ecoli, 'SLNLS', l1_NLS, l2_NLS);
+A_SLPRU = UnmixSpIm(mixture, E_Ecoli, 'SLPRU', l1_PR, l2_PR);
 %% Estimated abundance matrices
-sz_ref = size(ref_Ecoli, 2);
-sz_row = floor(sqrt(sz_ref));
-sz_col = ceil(sz_ref / sz_row);
-figure
-for r = 1:sz_ref
-    subplot(sz_row, sz_col, r), imshow(A(:, :, r))
-    title(Fluorophores{r})
-end
+FigSpIm(mixture, A_NLS, A_SNLS, A_SLNLS, A_SLPRU, Fluorophores)

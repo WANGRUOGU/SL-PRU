@@ -5,7 +5,7 @@ load EcoliEndMat.mat
 lam_seq = @(lam_ub, lam_lb, lam_range) ...
     [0,exp(log(lam_lb):((log(lam_ub)-log(lam_lb))/lam_range):log(lam_ub))];
 lam = lam_seq(10, .1, 8);
-sz_sam = 1e0;
+sz_sam = 1e3; % sample size (large for accuracy/small for time conssumming)
 %% Endmembers extraction
 E_Ecoli = PNMF(ref_Ecoli);
 %% Tuning parameters

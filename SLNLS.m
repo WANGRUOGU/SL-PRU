@@ -1,16 +1,4 @@
-function [U, A] = SLPRU(Y, M, lam1, lam2)
-%% Sparse and Low-Rank Poisson Regression Unmixing (SL-PRU)
-%
-% ----------- Input variables --------------
-% Y - a spectral window with dimensions C (channels) x N (pixels)
-% M - endmember matrix with dimensions R (endmembers) x C
-% lam1 - tuning parameter for low-rank regularizer
-% lam2 - tuning parameter for l21 norm or sparsity regularizer
-% ----------- Output variables -------------
-% A - abundance vector of the target pixel in the middle of Y
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Data preprocessing
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [U, A] = SLNLS(Y, M, lam1, lam2)
 norm_y = sqrt(mean(Y(:).^2));
 Y = Y/norm_y;
 [C, N] = size(Y);
@@ -18,8 +6,6 @@ R = size(M, 2);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialization
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Maximum number of iterations
-iter = 1e3;
 % Abundance matrix
 U = (M'*M)^(-1)*M'*Y;
 U(U < 0) = 0;
@@ -38,6 +24,8 @@ mu = 1e-2;
 % error tolerance
 epsilon = 1e-4;
 tol = sqrt((3*R+C)*N)*epsilon;
+% Maximum number of iterations
+iter = 1e3;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sequences of subproblems
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -49,8 +37,7 @@ for i = 1:iter
         V4_old = V4;
     end
     U = ((M'*M+3*eye(R))^-1)*(M'*(V1+D1)+(V2+D2)+(V3+D3)+(V4+D4));
-    V1p = M*U - D1 - 1/mu;
-    V1 = (V1p + sqrt(V1p.^2 + 4*Y/mu))/2;
+    V1 = 1/(1+mu)*(Y + mu*(M*U - D1));
     [u, s, v] = svd(U - D2,'econ');
     ds = diag(s);
     V2 = u*diag(max(ds-(lam1/mu)*(1./(ds+eps)),ds*0))*v';
@@ -83,7 +70,7 @@ for i = 1:iter
     end
 end
 
-U = U*norm_y;
+U = U * norm_y;
 U(U < 0) = 0;
 A = U(:,round(N/2));
 end

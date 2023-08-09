@@ -1,5 +1,9 @@
+You can save your tiff file in "data" and change the "filename" in "demo.m". You can tune the parameters using reference images or set the values for "lam1" and "lam2" directly. The unmixing result will be saved in "result". 
+
+Description: 
+
 Data:
-EcoliEndMat - Thirteen reference images of labeled E. coli cells and a mixed biological image
+Thirteen reference images of labeled E. coli cells and a mixed biological image
 
 .m files:
 demo.m - Demo for unmixing biological fluorescence image data with sparse and low-rank Poisson regression (SL-PRU)

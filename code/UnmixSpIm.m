@@ -28,6 +28,8 @@ for i = 2:(sz_im-1)
             ind_y = max(j-1, 1):min(j+1, sz_im);
             M = reshape(T(ind_x, ind_y, :), length(ind_x)*length(ind_y), C);
             [~, A(i, j, :)] = f(M);
+            n = (sz_im-2) * (i-2) + j-1; 
+            fprintf('Number of pixels unmixed: %d\n', n);
         end
     end
 end
